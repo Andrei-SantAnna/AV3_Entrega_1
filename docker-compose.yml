@@ -1,0 +1,29 @@
+# docker-compose.yml
+version: "3.8"
+
+services:
+  # O serviço do Proxy Reverso
+  proxy:
+    build: ./proxy          # Constrói a imagem a partir da pasta ./proxy
+    ports:
+    - "80:80"             # Mapeia a porta 80 do host para a porta 80 do proxy 
+    depends_on:             # Garante que os backends subam primeiro 
+      - web1
+      - web2
+      - web3
+
+  # Nossos três serviços backend 
+  web1:
+    build: ./backend        # Constrói a imagem a partir da pasta ./backend
+    environment:
+      - SERVER_NAME=web1    # Define a variável de ambiente única para este serviço
+
+  web2:
+    build: ./backend
+    environment:
+      - SERVER_NAME=web2
+
+  web3:
+    build: ./backend
+    environment:
+      - SERVER_NAME=web3
