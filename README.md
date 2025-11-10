@@ -70,15 +70,15 @@ Para fins de depuração, pode ser útil ver os IPs internos que o Docker atribu
     ```json
     {
       "name": "entrega_1-web1-1",
-      "ip": "172.18.0.3/16"
-    }
-    {
-      "name": "entrega_1-web2-1",
       "ip": "172.18.0.4/16"
     }
     {
-      "name": "entrega_1-web3-1",
+      "name": "entrega_1-web2-1",
       "ip": "172.18.0.2/16"
+    }
+    {
+      "name": "entrega_1-web3-1",
+      "ip": "172.18.0.3/16"
     }
     {
       "name": "entrega_1-proxy-1",
@@ -170,14 +170,15 @@ Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin d
   * **Análise:**
 1000 requisições 
 
-
-
+![IP_Hash_1000_requisições](https://github.com/user-attachments/assets/b9b8ff76-f34f-4054-875c-620975291da1)
 
 10000 requisições
 
-
+![IP_Hash_10000_requisições](https://github.com/user-attachments/assets/ec848bc9-e520-4317-adad-b20114998ef7)
 
 100000 requisições
+
+![IP_Hash_100000_requisições](https://github.com/user-attachments/assets/c0c52ff1-fbca-4a6a-b7c9-95142c5dc188)
 
 
   Este algoritmo direciona o cliente sempre ao mesmo servidor com base no hash do seu IP. Como esperado, todas as requisições do meu navegador e `curl` foram consistentemente roteadas para o mesmo servidor (`web1` no meu teste). Isso demonstra como o `ip_hash` é usado para manter a afinidade de sessão (session stickiness), o que é vital para aplicações que armazenam estado (como um carrinho de compras).*
@@ -206,8 +207,8 @@ Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin d
     ```
 
   * **Análise:**
-    [INSIRA SUA ANÁLISE AQUI]
-    *Exemplo: Imediatamente após parar o container `web2`, o Nginx detectou que o servidor não estava respondendo e automaticamente o removeu do pool de balanceamento. O serviço em `http://localhost` continuou funcionando perfeitamente, sem qualquer erro para o cliente. Os logs confirmam que o tráfego passou a ser distribuído apenas entre os servidores saudáveis (`web1` e `web3`). Isso demonstra a capacidade do proxy reverso de garantir alta disponibilidade.*
+
+    * Imediatamente após parar o container `web2`, o Nginx detectou que o servidor não estava respondendo e automaticamente o removeu do pool de balanceamento. O serviço em `http://localhost` continuou funcionando perfeitamente, sem qualquer erro para o cliente. Os logs confirmam que o tráfego passou a ser distribuído apenas entre os servidores saudáveis (`web1` e `web3`). Isso demonstra a capacidade do proxy reverso de garantir alta disponibilidade.*
 
 ## 🎬 Vídeo de Demonstração
 
