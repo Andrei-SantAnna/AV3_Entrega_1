@@ -197,14 +197,11 @@ Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin d
 
   * **Coleta de Dados (Logs):**
 
-    ```log
-    [COLE SEU LOG DO TESTE DE FALHA AQUI]
-    Exemplo (após a falha):
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.2:8000 (web3)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.2:8000 (web3)
-    ```
+  * Log
+
+![logs_teste_sem_web2](https://github.com/user-attachments/assets/4c2ba221-0031-431b-9afc-3b81e647db2d)
+
+    
 
   * **Análise:**
 
