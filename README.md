@@ -1,3 +1,5 @@
+## Discente - Andrei Boulhosa de Sant'Anna
+
 # Atividade Individual 01 (AV3) - Sistemas Distribuídos
 
 Este projeto implementa um ambiente distribuído composto por múltiplas instâncias de serviço (três containers backend) que são balanceadas por um proxy reverso Nginx.
@@ -131,6 +133,9 @@ Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin d
   * **Configuração:** A diretiva `least_conn;` foi descomentada no `nginx.conf`.
 
   * **Teste:** Teste de carga com `ab -n 1000 -c 50 http://localhost/`.
+  * **Coleta de Dados (Logs):**
+  
+![Logs_Leans_conn](https://github.com/user-attachments/assets/5a0e8491-3ef6-4964-bd74-ab48207b2fbb)
 
   * **Análise:**
 
@@ -160,18 +165,22 @@ Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin d
 
   * **Coleta de Dados (Logs):**
 
-    ```log
-    [COLE SEU LOG DO IP HASH AQUI]
-    Exemplo:
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
-    ```
+    ![Logd_IP_Hash](https://github.com/user-attachments/assets/07bf2cd2-88e0-47f9-b7fd-27cf3f06a0dd)
 
   * **Análise:**
-    [INSIRA SUA ANÁLISE AQUI]
-    *Exemplo: Este algoritmo direciona o cliente sempre ao mesmo servidor com base no hash do seu IP. Como esperado, todas as requisições do meu navegador e `curl` foram consistentemente roteadas para o mesmo servidor (`web2` no meu teste). Isso demonstra como o `ip_hash` é usado para manter a afinidade de sessão (session stickiness), o que é vital para aplicações que armazenam estado (como um carrinho de compras).*
+1000 requisições 
+
+
+
+
+10000 requisições
+
+
+
+100000 requisições
+
+
+  Este algoritmo direciona o cliente sempre ao mesmo servidor com base no hash do seu IP. Como esperado, todas as requisições do meu navegador e `curl` foram consistentemente roteadas para o mesmo servidor (`web1` no meu teste). Isso demonstra como o `ip_hash` é usado para manter a afinidade de sessão (session stickiness), o que é vital para aplicações que armazenam estado (como um carrinho de compras).*
 
 -----
 
@@ -204,6 +213,3 @@ Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin d
 
 [COLE O LINK PÚBLICO PARA O SEU VÍDEO DE 2 MINUTOS AQUI]
 
-## 👨‍💻 Autor
-
-[SEU NOME COMPLETO]
