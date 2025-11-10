@@ -1,0 +1,196 @@
+# Atividade Individual 01 (AV3) - Sistemas Distribuídos
+
+Este projeto implementa um ambiente distribuído composto por múltiplas instâncias de serviço (três containers backend) que são balanceadas por um proxy reverso Nginx.
+
+O objetivo principal é entender e demonstrar na prática como o balanceamento de carga contribui para o **desempenho** (distribuição de requisições), **disponibilidade** (tolerância a falhas) e **escalabilidade** do sistema.
+
+## 🏛️ Arquitetura do Ambiente
+
+O ambiente é orquestrado utilizando Docker Compose e consiste nos seguintes serviços:
+
+  * **`proxy` (Nginx):** Atua como o **Proxy Reverso** e **Balanceador de Carga**. Ele é o único ponto de entrada para o cliente (escutando na porta `80`) e distribui as requisições recebidas para os serviços backend.
+  * **`web1` (FastAPI):** Instância 1 do serviço backend, executando em um container Docker.
+  * **`web2` (FastAPI):** Instância 2 do serviço backend, executando em um container Docker.
+  * **`web3` (FastAPI):** Instância 3 do serviço backend, executando em um container Docker.
+
+Cada serviço backend possui um único endpoint (`/`) que retorna um JSON com informações sobre o servidor que atendeu a requisição, o timestamp, a latência simulada e o IP do cliente.
+
+## Tecnologias Utilizadas
+
+  * **Docker e Docker Compose:** Para criar, gerenciar e orquestrar os contêineres de aplicação.
+  * **Nginx:** Utilizado como proxy reverso e balanceador de carga.
+  * **FastAPI (Python):** Framework web usado para criar os serviços backend.
+
+Para executar este projeto, você precisará de:
+
+  * Docker
+  * Docker Compose (geralmente incluído no Docker Desktop)
+  * `curl` ou um navegador web (para testes manuais)
+  * `ab` (Apache Benchmark) para testes de carga (Ex: `sudo apt install apache2-utils`)
+  * `jq` (para filtrar a saída JSON da inspeção de rede - opcional, mas recomendado): `sudo apt install jq`
+
+## Como Executar
+
+1.  Clone este repositório para sua máquina local.
+
+2.  Abra um terminal na pasta raiz do projeto.
+
+3.  Execute o seguinte comando para construir as imagens e iniciar todos os contêineres:
+
+    ```bash
+    docker compose up --build -d
+    ```
+
+4.  Uma vez que os contêineres estejam em execução, você pode acessar o serviço através do proxy em:
+    `http://localhost`
+
+##  Como Verificar os IPs dos Contêineres (Opcional)
+
+Para fins de depuração, pode ser útil ver os IPs internos que o Docker atribuiu a cada contêiner.
+
+1.  Primeiro, descubra o nome da rede criada pelo Docker Compose:
+
+    ```bash
+    docker network ls
+    # O nome será algo como "nome-da-pasta-do-projeto_default"
+    # Ex: entrega_1_default
+    ```
+
+2.  Use o comando `docker network inspect` e filtre a saída com `jq` para mostrar apenas o nome e o IP de cada serviço:
+
+    ```bash
+    # Substitua 'entrega_1_default' pelo nome da sua rede
+    docker network inspect entrega_1_default | jq '.[0].Containers | .[] | {name: .Name, ip: .IPv4Address}'
+    ```
+
+3.  O resultado será parecido com este, mostrando os IPs da rede interna:
+
+    ```json
+    {
+      "name": "entrega_1-web1-1",
+      "ip": "172.18.0.3/16"
+    }
+    {
+      "name": "entrega_1-web2-1",
+      "ip": "172.18.0.4/16"
+    }
+    {
+      "name": "entrega_1-web3-1",
+      "ip": "172.18.0.2/16"
+    }
+    {
+      "name": "entrega_1-proxy-1",
+      "ip": "172.18.0.5/16"
+    }
+    ```
+
+## Análise dos Experimentos
+
+Os testes a seguir foram realizados para analisar o comportamento dos diferentes algoritmos de balanceamento e a resiliência do sistema.
+
+**Para alterar o algoritmo de balanceamento:**
+
+1.  Pare o ambiente: `docker compose down`
+2.  Edite o arquivo `proxy/nginx.conf`.
+3.  Na seção `upstream backend_servers`, comente ou descomente a diretiva desejada (`least_conn;` ou `ip_hash;`).
+4.  Reinicie o ambiente: `docker compose up --build -d`
+
+-----
+
+### Experimento 1: Round Robin (Padrão)
+
+  * **Configuração:** Nenhuma diretiva de algoritmo foi especificada no bloco `upstream`, utilizando o padrão Round Robin do Nginx.
+
+  * **Teste:** Múltiplas requisições foram enviadas ao `http://localhost` (atualizando o navegador) e um teste de carga foi executado com `ab -n 1000 -c 50 http://localhost/`.
+
+  * **Coleta de Dados (Logs):** Os logs do Nginx foram coletados com `docker compose logs proxy`.
+
+    ```log
+    [COLE SEU LOG DO ROUND ROBIN AQUI]
+    Exemplo:
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.2:8000 (web3)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
+    ...
+    ```
+
+  * **Análise:**
+    [INSIRA SUA ANÁLISE AQUI]
+    *Exemplo: Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin distribuiu as requisições de forma sequencial e equitativa entre os três servidores (web1, web2, web3, web1...). A distribuição de carga foi uniforme, com cada servidor recebendo aproximadamente 333 das 1000 requisições do teste de carga `ab`.*
+
+-----
+
+### Experimento 2: Least Connections
+
+  * **Configuração:** A diretiva `least_conn;` foi descomentada no `nginx.conf`.
+
+  * **Teste:** Teste de carga com `ab -n 1000 -c 50 http://localhost/`.
+
+  * **Coleta de Dados (Logs):**
+
+    ```log
+    [COLE SEU LOG DO LEAST CONNECTIONS AQUI]
+    ```
+
+  * **Análise:**
+    [INSIRA SUA ANÁLISE AQUI]
+    *Exemplo: O algoritmo `least_conn` envia novas requisições para o servidor com o menor número de conexões ativas no momento. Como nossos endpoints têm uma latência simulada muito curta e uniforme, o comportamento foi muito similar ao Round Robin. Em um cenário real com requisições de duração variável, este algoritmo seria mais eficiente, prevenindo que um servidor fique sobrecarregado enquanto outros estão ociosos.*
+
+-----
+
+### Experimento 3: IP Hash
+
+  * **Configuração:** A diretiva `ip_hash;` foi descomentada no `nginx.conf`.
+
+  * **Teste:** Múltiplas requisições enviadas *a partir do mesmo navegador* e `curl` (mesmo IP de cliente).
+
+  * **Coleta de Dados (Logs):**
+
+    ```log
+    [COLE SEU LOG DO IP HASH AQUI]
+    Exemplo:
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
+    ```
+
+  * **Análise:**
+    [INSIRA SUA ANÁLISE AQUI]
+    *Exemplo: Este algoritmo direciona o cliente sempre ao mesmo servidor com base no hash do seu IP. Como esperado, todas as requisições do meu navegador e `curl` foram consistentemente roteadas para o mesmo servidor (`web2` no meu teste). Isso demonstra como o `ip_hash` é usado para manter a afinidade de sessão (session stickiness), o que é vital para aplicações que armazenam estado (como um carrinho de compras).*
+
+-----
+
+### Experimento 4: Teste de Tolerância a Falhas
+
+  * **Configuração:** Ambiente executando com o balanceamento Round Robin.
+
+  * **Teste:** Simulação da indisponibilidade de um dos serviços backend.
+
+    1.  O ambiente estava operando normalmente, distribuindo entre web1, web2 e web3.
+    2.  O serviço `web2` foi parado manualmente: `docker compose stop web2`
+    3.  Novas requisições foram enviadas para `http://localhost`.
+
+  * **Coleta de Dados (Logs):**
+
+    ```log
+    [COLE SEU LOG DO TESTE DE FALHA AQUI]
+    Exemplo (após a falha):
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.2:8000 (web3)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
+    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.2:8000 (web3)
+    ```
+
+  * **Análise:**
+    [INSIRA SUA ANÁLISE AQUI]
+    *Exemplo: Imediatamente após parar o container `web2`, o Nginx detectou que o servidor não estava respondendo e automaticamente o removeu do pool de balanceamento. O serviço em `http://localhost` continuou funcionando perfeitamente, sem qualquer erro para o cliente. Os logs confirmam que o tráfego passou a ser distribuído apenas entre os servidores saudáveis (`web1` e `web3`). Isso demonstra a capacidade do proxy reverso de garantir alta disponibilidade.*
+
+## 🎬 Vídeo de Demonstração
+
+[COLE O LINK PÚBLICO PARA O SEU VÍDEO DE 2 MINUTOS AQUI]
+
+## 👨‍💻 Autor
+
+[SEU NOME COMPLETO]
