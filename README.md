@@ -105,19 +105,24 @@ Os testes a seguir foram realizados para analisar o comportamento dos diferentes
 
   * **Coleta de Dados (Logs):** Os logs do Nginx foram coletados com `docker compose logs proxy`.
 
-    ```log
-    [COLE SEU LOG DO ROUND ROBIN AQUI]
-    Exemplo:
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.3:8000 (web2)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.2:8000 (web3)
-    ... "GET / HTTP/1.1" -> 200 ... -> 172.28.0.4:8000 (web1)
-    ...
-    ```
+  ![Logs_Round_Robin](https://github.com/user-attachments/assets/6b04a406-473b-4e5b-931c-17154a06238b)
 
-  * **Análise:**
-    [INSIRA SUA ANÁLISE AQUI]
-    *Exemplo: Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin distribuiu as requisições de forma sequencial e equitativa entre os três servidores (web1, web2, web3, web1...). A distribuição de carga foi uniforme, com cada servidor recebendo aproximadamente 333 das 1000 requisições do teste de carga `ab`.*
+  
+
+* **Análise:**
+1000 requisições 
+
+![Round_Robin_1000_requisições](https://github.com/user-attachments/assets/881b0ffd-6ede-4b72-95ba-8259e9eb7d8c)
+
+10000 requisições
+
+![Round_Robin_10000_requisições](https://github.com/user-attachments/assets/affb945a-8974-435d-8efe-2189df3c966e)
+
+100000 requisições
+
+![Round_Robin_100000_requisições](https://github.com/user-attachments/assets/d04763bd-2ef0-445c-9095-795a6ef27e9f)
+
+Conforme observado nos logs e nos testes de navegador, o algoritmo Round Robin distribuiu as requisições de forma sequencial e equitativa entre os três servidores (web1, web2, web3, web1...). A distribuição de carga foi uniforme, com cada servidor recebendo aproximadamente 333 das 1000 requisições, 3333 das 10000 requisições e 33333 das 100000 requisições dos testes de carga ab.
 
 -----
 
@@ -127,15 +132,23 @@ Os testes a seguir foram realizados para analisar o comportamento dos diferentes
 
   * **Teste:** Teste de carga com `ab -n 1000 -c 50 http://localhost/`.
 
-  * **Coleta de Dados (Logs):**
-
-    ```log
-    [COLE SEU LOG DO LEAST CONNECTIONS AQUI]
-    ```
-
   * **Análise:**
-    [INSIRA SUA ANÁLISE AQUI]
-    *Exemplo: O algoritmo `least_conn` envia novas requisições para o servidor com o menor número de conexões ativas no momento. Como nossos endpoints têm uma latência simulada muito curta e uniforme, o comportamento foi muito similar ao Round Robin. Em um cenário real com requisições de duração variável, este algoritmo seria mais eficiente, prevenindo que um servidor fique sobrecarregado enquanto outros estão ociosos.*
+
+1000 requisições 
+
+![learn_connection_1000_requisições](https://github.com/user-attachments/assets/f5590662-d0f0-4f06-8c70-c3adb0e4d629)
+
+
+10000 requisições
+
+
+![learn_connection_10000_requisições](https://github.com/user-attachments/assets/91cef213-44fd-48e3-9583-60ee54a86cb3)
+
+100000 requisições
+
+![learn_connection_100000_requisições](https://github.com/user-attachments/assets/332cba2a-7543-4f14-a018-690eb3c1f230)
+
+    O algoritmo `least_conn` envia novas requisições para o servidor com o menor número de conexões ativas no momento. Como nossos endpoints têm uma latência simulada muito curta e uniforme, o comportamento foi muito similar ao Round Robin. Em um cenário real com requisições de duração variável, este algoritmo seria mais eficiente, prevenindo que um servidor fique sobrecarregado enquanto outros estão ociosos.*
 
 -----
 
