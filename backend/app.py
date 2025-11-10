@@ -1,4 +1,4 @@
-# backend/app.py
+
 from fastapi import FastAPI, Request
 import os
 import time
@@ -12,7 +12,7 @@ SERVER_NAME = os.environ.get('SERVER_NAME', 'default-server')
 @app.get("/")
 def read_root(request: Request):
     
-    # 1. Simular alguma latência (ex: 10ms)
+    # Simular alguma latência (ex: 10ms)
     start_time = time.time()
     time.sleep(0.01) # Simula 10ms de trabalho
     end_time = time.time()
